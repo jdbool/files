@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<style>
+		table,
+		th,
+		td {
+			border: 1px solid black;
+			padding: 10px;
+			font-family: 'Consolas', 'Courier New', monospace;
+		}
+	</style>
+</head>
+
+<body>
+	<table>
+		<thead>
+			<tr>
+				<th>
+					ID
+				</th>
+				<th>
+					Type
+				</th>
+				<th>
+					Size
+				</th>
+				<th>
+					Hits
+				</th>
+				<th>
+					Bot Hits
+				</th>
+				<th>
+					IP
+				</th>
+				<th>
+					Hash
+				</th>
+				<th>
+					Original Name
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+			{{#each files}}
+			<tr>
+				<td>
+					{{id}}
+				</td>
+				<td>
+					{{type}}
+				</td>
+				<td>
+					{{prettySize size}}
+				</td>
+				<td>
+					{{hits}}
+				</td>
+				<td>
+					{{botHits}}
+				</td>
+				<td>
+					{{ip}}
+				</td>
+				<td>
+					{{hash}}
+				</td>
+				<td>
+					{{originalName}}
+				</td>
+				<td>
+					<a href="/{{id}}">View</a>
+				</td>
+				<td>
+					<a href="/delete/{{id}}/{{deleteKey}}">Delete</a>
+				</td>
+			</tr>
+			{{/each}}
+		</tbody>
+	</table>
+</body>
+
+</html>
