@@ -57,7 +57,8 @@ app.engine('handlebars', handlebars.create({
 	defaultLayout: false
 }).engine);
 app.set('view engine', 'handlebars');
-app.enable('view cache');
+if (!config.noCache)
+	app.enable('view cache');
 app.set('views', path.join(__dirname, 'views'));
 
 const uploadsPath = id => path.join(__dirname, 'uploads', id);
