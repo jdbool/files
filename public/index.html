@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="https://fonts.googleapis.com/css?family=Montserrat&display=swap" rel="stylesheet">
+	<link href="/dropzone.min.css" rel="stylesheet">
+	<style>
+		* {
+			font-family: 'Montserrat', sans-serif;
+		}
+
+		html,
+		body {
+			margin: 0;
+			background-color: rgb(32, 33, 42);
+			color: white;
+			height: 100%;
+			width: 100%;
+		}
+
+		h2 {
+			font-size: 2em;
+			font-weight: 100;
+		}
+
+		#tokenInput {
+			height: 2em;
+			width: calc(100% - 3em);
+			background-color: transparent;
+			border: none;
+			color: white;
+			padding: 0px;
+		}
+
+		.tokenBox {
+			width: 100%;
+			padding: 1em;
+			height: 1em;
+		}
+
+		.dropzone {
+			width: 100%;
+			height: calc(100vh - 3em);
+			border: 2px dashed white;
+			background-color: transparent;
+			border-radius: 1em;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="tokenBox">
+		<input type="text" id="tokenInput" placeholder="Enter your token...">
+	</div>
+	<div class="dropzone"></div>
+
+	<script src="/dropzone.min.js"></script>
+	<script>
+		Dropzone.autoDiscover = false;
+
+		const tokenInput = document.getElementById('tokenInput');
+		tokenInput.value = localStorage.getItem('token');
+
+		tokenInput.addEventListener('input', e => {
+			console.log('changed');
+			localStorage.setItem('token', tokenInput.value);
+		});
+
+		const dropzone = new Dropzone('div.dropzone', {
+			url: '/upload',
+			sending: (file, xhr, formData) => {
+				xhr.setRequestHeader('Authorization', tokenInput.value);
+			},
+			init: function () {
+				this.on('error', function (file, data) {
+					if (data instanceof Object && data.error) {
+						console.log('Error', data.error);
+						this.emit('error', file, data.error.detail);
+					}
+				});
+				this.on('success', function (file) {
+					const data = JSON.parse(file.xhr.responseText);
+					console.log('Success', data);
+					
+					const a = document.createElement('a');
+  				a.setAttribute('href', '/' + data.id);
+    			a.innerHTML = '<br>' + data.id;
+    			file.previewTemplate.children[1].appendChild(a);
+				});
+			}
+		});
+	</script>
+</body>
+
+</html>

@@ -168,6 +168,8 @@ app.post('/upload', rateLimit({
 	}
 });
 
+app.use(express.static(path.join(__dirname, 'public'), { maxAge: '7d' }));
+
 app.get('/:id', rateLimit({
 	windowMs: 15 * 60 * 1000,
 	max: 100,
@@ -257,18 +259,6 @@ app.get('/delete/:id/:deleteKey', rateLimit({
 		console.log(chalk.yellow('[Delete] ') + file.id);
 	} catch (err) {
 		console.log(chalk.red('[Delete] ') + `${file.id}, unable to erase data\n\t${err}`);
-	}
-});
-
-app.get('/', (req, res, next) => {
-	if (req.accepts('html')) {
-		res.render('index');
-	} else {
-		problem(req, res, {
-			status: 600,
-			title: 'Gray Goo',
-			detail: 'https://en.wikipedia.org/wiki/Gray_goo'
-		});
 	}
 });
 
