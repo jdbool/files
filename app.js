@@ -162,7 +162,7 @@ app.post('/upload', rateLimit({
 		problem(req, res, {
 			status: 500,
 			title: 'Internal Server Error',
-			detail: err
+			detail: err.message
 		});
 		console.log(chalk.red('[Upload] ') + `Unable to upload:\n\t${err}`);
 	}
