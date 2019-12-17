@@ -68,6 +68,15 @@
 			localStorage.setItem('token', tokenInput.value);
 		});
 
+		function copyToClipboard (text) {
+			const dummy = document.createElement('textarea');
+			document.body.appendChild(dummy);
+			dummy.value = text;
+			dummy.select();
+			document.execCommand('copy');
+			document.body.removeChild(dummy);
+		}
+
 		const dropzone = new Dropzone('div.dropzone', {
 			url: '/upload',
 			sending: (file, xhr, formData) => {
@@ -84,11 +93,35 @@
 					const data = JSON.parse(file.xhr.responseText);
 					console.log('Success', data);
 
-					const a = document.createElement('a');
-					a.setAttribute('href', '/' + data.id);
-					a.setAttribute('class', 'dz-filename');
-					a.innerHTML = `<span>${data.id}</span>`;
-					file.previewTemplate.children[1].appendChild(a);
+					file.previewTemplate.children[1].children[1].remove();
+
+					{
+						const a = document.createElement('a');
+						a.setAttribute('class', 'dz-filename');
+						a.innerHTML = `<span>Copy Link</span>`;
+						a.onclick = function () {
+							copyToClipboard(`${window.location.origin}/${data.id}`);
+						};
+						file.previewTemplate.children[1].appendChild(a);
+					}
+
+					{
+						file.previewTemplate.children[1].appendChild(document.createElement('br'));
+						const a = document.createElement('a');
+						a.setAttribute('class', 'dz-filename');
+						a.innerHTML = `<span>Delete</span>`;
+						a.onclick = async function () {
+							const res = await fetch(`/delete/${data.id}/${data.deleteKey}`, {
+								headers: {
+									Accept: 'application/json'
+								}
+							});
+							if (res.ok) {
+								file.previewTemplate.remove();
+							}
+						};
+						file.previewTemplate.children[1].appendChild(a);
+					}
 				});
 			}
 		});
