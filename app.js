@@ -26,8 +26,6 @@ mongoose.set('toObject', {
 			ret.id = ret._id;
 			delete ret._id;
 		}
-		if (ret.__v)
-			delete ret.__v;
 	}
 });
 
