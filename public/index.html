@@ -80,6 +80,7 @@
 		const dropzone = new Dropzone('div.dropzone', {
 			url: '/upload',
 			maxFilesize: 5000, //MB
+			timeout: 1000 * 60 * 60 * 4, //4h
 			sending: (file, xhr, formData) => {
 				xhr.setRequestHeader('Authorization', tokenInput.value);
 			},
