@@ -1,6 +1,10 @@
 # files
 Simple file hosting server for Node.js. Stores file information in MongoDB and uploads in the file system.
 
+# Prerequisites
+- Node
+- MongoDB
+
 # Usage
 Visiting `/` in a browser shows a single page where you can enter your token and upload files.
 
