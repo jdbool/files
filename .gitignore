@@ -107,3 +107,4 @@ dist
 /files.db
 /config.json
 .DS_Store
+.vscode/*
