@@ -1,85 +1,252 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+	<link rel="stylesheet" href="/fomantic/semantic.min.css">
 	<style>
-		table,
-		th,
-		td {
-			border: 1px solid black;
-			padding: 10px;
-			font-family: 'Consolas', 'Courier New', monospace;
+		body {
+			background-color: #1E1E1E;
+			color: white;
+		}
+
+		.ui.container {
+			padding: 2em;
+		}
+
+		.monospace {
+			font-family: 'Courier New', Courier, monospace;
 		}
 	</style>
 </head>
 
 <body>
-	<table>
-		<thead>
-			<tr>
-				<th>
-					ID
-				</th>
-				<th>
-					Type
-				</th>
-				<th>
-					Size
-				</th>
-				<th>
-					Hits
-				</th>
-				<th>
-					Bot Hits
-				</th>
-				<th>
-					IP
-				</th>
-				<th>
-					Hash
-				</th>
-				<th>
-					Original Name
-				</th>
-			</tr>
-		</thead>
-		<tbody>
-			{{#each files}}
-			<tr>
-				<td>
-					{{id}}
-				</td>
-				<td>
-					{{type}}
-				</td>
-				<td>
-					{{prettySize size}}
-				</td>
-				<td>
-					{{hits}}
-				</td>
-				<td>
-					{{botHits}}
-				</td>
-				<td>
-					{{ip}}
-				</td>
-				<td>
-					{{hash}}
-				</td>
-				<td>
-					{{originalName}}
-				</td>
-				<td>
-					<a href="/{{id}}">View</a>
-				</td>
-				<td>
-					<a href="/delete/{{id}}/{{deleteKey}}">Delete</a>
-				</td>
-			</tr>
-			{{/each}}
-		</tbody>
-	</table>
+	<div class="ui container">
+		<h1 class="ui inverted header">
+			Files
+		</h1>
+		<table class="ui inverted unstackable table">
+			<thead>
+				<tr>
+					<th>
+						ID
+					</th>
+					<th>
+						Type
+					</th>
+					<th>
+						Size
+					</th>
+					<th>
+						Hits
+					</th>
+					<th>
+						Bot Hits
+					</th>
+					<th>
+						IP
+					</th>
+					<th>
+						Original Name
+					</th>
+					<th colspan="2">
+						Controls
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{#each files}}
+				{{#if deleted}}
+				<tr class="left marked red">
+					{{else}}
+				<tr class="left marked green">
+					{{/if}}
+					<td class="monospace">
+						{{id}}
+					</td>
+					<td>
+						{{type}}
+					</td>
+					<td>
+						{{prettySize size}}
+					</td>
+					<td>
+						{{hits}}
+					</td>
+					<td>
+						{{botHits}}
+					</td>
+					<td>
+						{{ip}}
+					</td>
+					<td>
+						{{originalName}}
+					</td>
+					{{#unless deleted}}
+					<td>
+						<a href="/{{id}}" class="ui blue tertiary button">View</a>
+					</td>
+					<td>
+						<a href="/delete/{{id}}/{{deleteKey}}" class="ui red tertiary button">Delete</a>
+					</td>
+					{{/unless}}
+				</tr>
+				{{/each}}
+			</tbody>
+		</table>
+		<h1 class="ui inverted header">
+			Tokens
+		</h1>
+		<div class="ui inverted segment">
+			<div class="ui large inverted transparent input">
+				<input type="text" id="storageLimitInput" placeholder="Storage limit? (MB)">
+			</div>
+			<div class="ui large inverted transparent input">
+				<input type="text" id="detailsInput" placeholder="Details?">
+			</div>
+			<button class="ui large inverted blue button" onclick="generateToken()">Generate</button>
+		</div>
+		<div id="tokenMessageContainer"></div>
+		<table class="ui inverted unstackable table">
+			<thead>
+				<tr>
+					<th>
+						Token
+					</th>
+					<th>
+						Uploaded
+					</th>
+					<th>
+						Allowed
+					</th>
+					<th>
+						Details
+					</th>
+					<th>
+						Controls
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{#each tokens}}
+				{{#if deleted}}
+				<tr class="left marked red">
+					{{else}}
+				<tr class="left marked green">
+					{{/if}}
+					<td class="monospace">
+						{{id}}
+					</td>
+					<td>
+						{{prettySize uploadedBytes}}
+					</td>
+					<td>
+						{{#if allowedBytes}}
+						{{prettySize allowedBytes}}
+						{{else}}
+						∞
+						{{/if}}
+					</td>
+					<td>
+						{{#if details}}
+						{{details}}
+						{{else}}
+						<i>n/a</i>
+						{{/if}}
+					</td>
+					{{#unless deleted}}
+					<td>
+						<a href="#" class="ui red tertiary button" onclick="revokeToken('{{id}}')">Revoke</a>
+					</td>
+					{{/unless}}
+				</tr>
+				{{/each}}
+			</tbody>
+		</table>
+	</div>
+
+	<script>
+		function htmlToElement(html) {
+			const template = document.createElement('template');
+			template.innerHTML = html.trim();
+			return template.content.firstChild;
+		}
+
+		const tokenMessageContainer = document.getElementById('tokenMessageContainer');
+		const storageLimitInput = document.getElementById('storageLimitInput');
+		const detailsInput = document.getElementById('detailsInput');
+
+		async function revokeToken(id) {
+			const res = await fetch('/admin/tokens', {
+				method: 'DELETE',
+				credentials: 'include',
+				headers: {
+					'Accept': 'application/json',
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ id })
+			});
+			const data = await res.json();
+			if (!res.ok) {
+				console.error(data);
+				tokenMessageContainer.appendChild(htmlToElement(/*html*/`
+				<div class="ui inverted negative message">
+				  <div class="header">
+				    ${data.error.title} (${data.error.status})
+				  </div>
+				  <p>${data.error.detail}</p>
+				</div>
+				`));
+			} else {
+				location.reload();
+			}
+		}
+
+		async function generateToken() {
+			let allowedBytes;
+			if (storageLimitInput.value.length) {
+				const mb = Number(storageLimitInput.value);
+				if (isNaN(mb) || !Number.isInteger(mb) || mb < 1) {
+					tokenMessageContainer.appendChild(htmlToElement(/*html*/`
+					<div class="ui inverted negative message">
+					  Storage limit must be a positive whole number
+					</div>
+					`));
+					return;
+				}
+				allowedBytes = mb * 1024 * 1024;
+			}
+			const res = await fetch('/admin/tokens', {
+				method: 'POST',
+				credentials: 'include',
+				headers: {
+					'Accept': 'application/json',
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					allowedBytes,
+					details: detailsInput.value.length ? detailsInput.value : undefined
+				})
+			});
+			const data = await res.json();
+			if (!res.ok) {
+				console.error(data);
+				tokenMessageContainer.appendChild(htmlToElement(/*html*/`
+				<div class="ui inverted negative message">
+				  <div class="header">
+				    ${data.error.title} (${data.error.status})
+				  </div>
+				  <p>${data.error.detail}</p>
+				</div>
+				`));
+			} else {
+				location.reload();
+			}
+		}
+	</script>
 </body>
 
 </html>
