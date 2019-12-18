@@ -387,11 +387,11 @@ app.use((req, res) => {
 	console.log('Starting...');
 
 	try {
-		await mongoose.connect(config.mongoURL, Object.assign({
+		await mongoose.connect(config.mongoURL, {
 			useNewUrlParser: true,
 			useUnifiedTopology: true,
 			useFindAndModify: false
-		}, config.mongoSettings));
+		});
 		console.log(logSymbols.success, 'MongoDB connected');
 	} catch (err) {
 		console.log(logSymbols.error, `MongoDB connection failed: ${err.message}`);

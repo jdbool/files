@@ -69,21 +69,4 @@ Uses GET so the link can be opened in a browser. If the request doesn't accept H
 ```
 
 # Configuration
-`config.json` has to be created. Example:
-```js
-{
-	"port": 3020,
-	// Logins authorized to access /admin
-	"adminUsers": {
-		"username": "password",
-		...
-	},
-	"mongoURL": "mongodb://localhost:27017/files",
-	// Additional settings when connecting with mongoose
-	"mongoSettings": {
-		"auth": { "authSource": "admin" },
-		"user": "GeoGrumbler59",
-		"pass": "myawesomepassword"
-	}
-}
-```
+`config.json` has to be created, see `config.sample.json`.
