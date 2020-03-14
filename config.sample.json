@@ -1,0 +1,7 @@
+{
+	"port": 3020,
+	"adminUsers": {
+		"admin": "password123"
+	},
+	"mongoURL": "mongodb://user:password@localhost:27017/files?authSource=admin"
+}

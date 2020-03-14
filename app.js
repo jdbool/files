@@ -26,7 +26,6 @@ mongoose.set('toObject', {
 			ret.id = ret._id;
 			delete ret._id;
 		}
-		if (ret.__v) delete ret.__v;
 	}
 });
 
@@ -458,17 +457,11 @@ app.use((req, res) => {
 	console.log('Starting...');
 
 	try {
-		await mongoose.connect(
-			config.mongoURL,
-			Object.assign(
-				{
-					useNewUrlParser: true,
-					useUnifiedTopology: true,
-					useFindAndModify: false
-				},
-				config.mongoSettings
-			)
-		);
+		await mongoose.connect(config.mongoURL, {
+			useNewUrlParser: true,
+			useUnifiedTopology: true,
+			useFindAndModify: false
+		});
 		console.log(logSymbols.success, 'MongoDB connected');
 	} catch (err) {
 		console.log(logSymbols.error, `MongoDB connection failed: ${err.message}`);

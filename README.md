@@ -1,11 +1,15 @@
 # files
-Simple file hosting server for Node.js. Stores file information in an SQLite database and uploads in the file system.
+Simple file hosting server for Node.js. Stores file information in MongoDB and uploads in the file system.
+
+# Prerequisites
+- Node
+- MongoDB
 
 # Usage
 Visiting `/` in a browser shows a single page where you can enter your token and upload files.
 
 ## Admin
-`/admin` in a browser will prompt for a username and password, and shows a list of all uploaded files with details and options.
+`/admin` in a browser will prompt for a username and password, and allows control of tokens and uploaded files.
 
 # API
 
@@ -65,17 +69,4 @@ Uses GET so the link can be opened in a browser. If the request doesn't accept H
 ```
 
 # Configuration
-`config.json` has to be created. Example:
-```js
-{
-	"port": 3020,
-	"adminUsers": {
-		"username": "password",
-		...
-	},
-	"tokens": [
-		"alonguniquethinghere",
-		...
-	]
-}
-```
+`config.json` has to be created, see `config.sample.json`.
