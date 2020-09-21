@@ -21,12 +21,12 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 mongoose.set('toObject', {
-	transform: function(doc, ret) {
+	transform: function (doc, ret) {
 		if (ret._id) {
 			ret.id = ret._id;
 			delete ret._id;
 		}
-	}
+	},
 });
 
 const fileSchema = new Schema(
@@ -41,11 +41,11 @@ const fileSchema = new Schema(
 		ip: String,
 		deleteKey: String,
 		hash: String,
-		originalName: String
+		originalName: String,
 	},
 	{
 		_id: false,
-		timestamps: true
+		timestamps: true,
 	}
 );
 
@@ -56,11 +56,11 @@ const tokenSchema = new Schema(
 		files: [{ type: String, ref: 'File' }],
 		uploadedBytes: Number,
 		allowedBytes: Number,
-		details: String
+		details: String,
 	},
 	{
 		_id: false,
-		timestamps: true
+		timestamps: true,
 	}
 );
 
@@ -68,7 +68,7 @@ const File = mongoose.model('File', fileSchema);
 const Token = mongoose.model('Token', tokenSchema);
 
 const app = express();
-app.set('trust proxy', 'loopback');
+app.set('trust proxy', true);
 
 app.use((req, res, next) => {
 	res.set('Access-Control-Allow-Origin', '*');
@@ -78,7 +78,7 @@ app.use((req, res, next) => {
 app.use(
 	fileUpload({
 		useTempFiles: true,
-		tempFileDir: process.platform == 'win32' ? 'C:/temp/' : '/tmp/'
+		tempFileDir: process.platform == 'win32' ? 'C:/temp/' : '/tmp/',
 	})
 );
 
@@ -88,16 +88,16 @@ app.engine(
 	'handlebars',
 	handlebars.create({
 		helpers: {
-			prettySize
+			prettySize,
 		},
-		defaultLayout: false
+		defaultLayout: false,
 	}).engine
 );
 app.set('view engine', 'handlebars');
 if (!config.noCache) app.enable('view cache');
 app.set('views', path.join(__dirname, 'views'));
 
-const uploadsPath = id => path.join(__dirname, 'uploads', id);
+const uploadsPath = (id) => path.join(__dirname, 'uploads', id);
 
 const problem = (req, res, error) => {
 	res.status(error.status);
@@ -106,7 +106,7 @@ const problem = (req, res, error) => {
 	} else {
 		// Object with a property called 'error'
 		res.json({
-			error
+			error,
 		});
 	}
 };
@@ -122,7 +122,7 @@ const noValidationProblems = (req, res, next) => {
 			status: 422,
 			title: 'Unprocessable Entity',
 			detail: 'Invalid body given',
-			problems: problems.array()
+			problems: problems.array(),
 		});
 		return;
 	}
@@ -134,7 +134,7 @@ app.use(
 	basicAuth({
 		users: config.adminUsers,
 		challenge: true,
-		realm: 'files-admin'
+		realm: 'files-admin',
 	})
 );
 
@@ -142,20 +142,16 @@ app.get('/admin', async (req, res) => {
 	const files = await File.find().exec();
 	const tokens = await Token.find().exec();
 	res.render('admin', {
-		files: files.map(file => file.toObject()),
-		tokens: tokens.map(token => token.toObject())
+		files: files.map((file) => file.toObject()),
+		tokens: tokens.map((token) => token.toObject()),
 	});
 });
 
 app.post(
 	'/admin/tokens',
 	[
-		check('allowedBytes')
-			.optional()
-			.isInt(),
-		check('details')
-			.optional()
-			.isString()
+		check('allowedBytes').optional().isInt(),
+		check('details').optional().isString(),
 	],
 	noValidationProblems,
 	async (req, res) => {
@@ -165,7 +161,7 @@ app.post(
 			files: [],
 			uploadedBytes: 0,
 			allowedBytes: req.body.allowedBytes || null,
-			details: req.body.details || null
+			details: req.body.details || null,
 		});
 
 		await token.save();
@@ -185,7 +181,7 @@ app.delete(
 		const token = await Token.findOne(
 			{
 				_id: req.body.id,
-				deleted: false
+				deleted: false,
 			},
 			'_id deleted files uploadedBytes allowedBytes details createdAt updatedAt'
 		).exec();
@@ -193,7 +189,7 @@ app.delete(
 			problem(req, res, {
 				status: 404,
 				title: 'Not Found',
-				detail: 'No token with that ID'
+				detail: 'No token with that ID',
 			});
 			return;
 		}
@@ -214,9 +210,9 @@ app.post(
 			error: {
 				status: 429,
 				title: 'Too Many Requests',
-				detail: 'You are uploading too many files'
-			}
-		}
+				detail: 'You are uploading too many files',
+			},
+		},
 	}),
 	async (req, res) => {
 		const tokenID = req.get('Authorization');
@@ -224,7 +220,7 @@ app.post(
 		const token = await Token.findOne(
 			{
 				_id: tokenID,
-				deleted: false
+				deleted: false,
 			},
 			'_id uploadedBytes allowedBytes'
 		).exec();
@@ -232,7 +228,7 @@ app.post(
 			problem(req, res, {
 				status: 401,
 				title: 'Unauthorized',
-				detail: 'No authorized token given'
+				detail: 'No authorized token given',
 			});
 			return;
 		}
@@ -243,7 +239,7 @@ app.post(
 			problem(req, res, {
 				status: 400,
 				title: 'Bad Request',
-				detail: 'No file given'
+				detail: 'No file given',
 			});
 			return;
 		}
@@ -255,7 +251,7 @@ app.post(
 			problem(req, res, {
 				status: 403,
 				title: 'Forbidden',
-				detail: "Exceeds token's allowed storage space"
+				detail: "Exceeds token's allowed storage space",
 			});
 			return;
 		}
@@ -273,7 +269,7 @@ app.post(
 			}
 
 			const hash = await hasha.fromFile(upload.tempFilePath, {
-				algorithm: 'md5'
+				algorithm: 'md5',
 			});
 
 			await fs.rename(upload.tempFilePath, uploadsPath(id));
@@ -289,18 +285,18 @@ app.post(
 				ip: req.ip,
 				deleteKey: randomString.generate(64),
 				hash,
-				originalName: upload.name
+				originalName: upload.name,
 			});
 
 			await file.save();
 
 			await Token.findByIdAndUpdate(token._id, {
 				$inc: {
-					uploadedBytes: upload.size
+					uploadedBytes: upload.size,
 				},
 				$push: {
-					files: file._id
-				}
+					files: file._id,
+				},
 			}).exec();
 
 			res.json(file.toObject());
@@ -316,7 +312,7 @@ app.post(
 			problem(req, res, {
 				status: 500,
 				title: 'Internal Server Error',
-				detail: err.message
+				detail: err.message,
 			});
 			console.log(chalk.red('[Upload] ') + `Unable to upload:\n\t${err}`);
 		}
@@ -334,15 +330,15 @@ app.get(
 			error: {
 				status: 429,
 				title: 'Too Many Requests',
-				detail: 'You are requesting too many files'
-			}
-		}
+				detail: 'You are requesting too many files',
+			},
+		},
 	}),
 	async (req, res) => {
 		const file = await File.findOne(
 			{
 				_id: req.params.id,
-				deleted: false
+				deleted: false,
 			},
 			'_id type'
 		).exec();
@@ -350,7 +346,7 @@ app.get(
 			problem(req, res, {
 				status: 404,
 				title: 'Not Found',
-				detail: 'No file with that ID'
+				detail: 'No file with that ID',
 			});
 			return;
 		}
@@ -364,7 +360,7 @@ app.get(
 			problem(req, res, {
 				status: 500,
 				title: 'Internal Server Error',
-				detail: 'Could not send file'
+				detail: 'Could not send file',
 			});
 			return;
 		}
@@ -373,10 +369,7 @@ app.get(
 			if (
 				!req.get('User-Agent') ||
 				!req.get('Accept') ||
-				req
-					.get('User-Agent')
-					.toLowerCase()
-					.includes('bot')
+				req.get('User-Agent').toLowerCase().includes('bot')
 			) {
 				await File.findByIdAndUpdate(file._id, { $inc: { botHits: 1 } }).exec();
 				console.log(
@@ -400,21 +393,21 @@ app.get(
 			error: {
 				status: 429,
 				title: 'Too Many Requests',
-				detail: 'You are deleting too many files'
-			}
-		}
+				detail: 'You are deleting too many files',
+			},
+		},
 	}),
 	async (req, res) => {
 		const file = await File.findOne({
 			_id: req.params.id,
 			deleteKey: req.params.deleteKey,
-			deleted: false
+			deleted: false,
 		}).exec();
 		if (!file) {
 			problem(req, res, {
 				status: 404,
 				title: 'Not Found',
-				detail: 'No file with that ID or deleteKey'
+				detail: 'No file with that ID or deleteKey',
 			});
 			return;
 		}
@@ -424,8 +417,8 @@ app.get(
 
 		await Token.findByIdAndUpdate(file.token, {
 			$inc: {
-				uploadedBytes: -file.size
-			}
+				uploadedBytes: -file.size,
+			},
 		}).exec();
 
 		if (req.accepts('html')) {
@@ -449,7 +442,7 @@ app.use((req, res) => {
 	problem(req, res, {
 		status: 404,
 		title: 'Not Found',
-		detail: 'Endpoint does not exist'
+		detail: 'Endpoint does not exist',
 	});
 });
 
@@ -460,7 +453,7 @@ app.use((req, res) => {
 		await mongoose.connect(config.mongoURL, {
 			useNewUrlParser: true,
 			useUnifiedTopology: true,
-			useFindAndModify: false
+			useFindAndModify: false,
 		});
 		console.log(logSymbols.success, 'MongoDB connected');
 	} catch (err) {
